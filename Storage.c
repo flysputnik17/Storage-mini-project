@@ -134,6 +134,20 @@ int main()
             if(strcmp(first_word, "_add") == 0)
             {
                 printf("test add function\n");
+                printf("Adding item...\n");
+                Result add_result = add_item(new_storage, second_word, atoi(item_quantity), atoi(shelf_index), atoi(cell_index));
+                if (add_result == success)
+                {
+                    printf("Item added:\n");
+                    printf("Item name: %s\n", new_storage->shelf[atoi(shelf_index)].cell[atoi(cell_index)].item->item_name);
+                    printf("Item quantity: %d\n", new_storage->shelf[atoi(shelf_index)].cell[atoi(cell_index)].item->quantity);
+                    printf("Item on shelf num: %d\n", atoi(shelf_index));
+                    printf("Item on cell num: %d\n", atoi(cell_index));
+                }
+                else
+                {
+                    printf("Failed to add item\n");
+                }
                 if(add_item(new_storage, second_word, atoi(item_quantity), atoi(shelf_index), atoi(cell_index)) == success)
                 {
                     printf("itme added : \nitem name is %s\nitem quantity is %s\nitem on shelf num : %d\n item on cell num : %d\n", new_storage->shelf->cell->item, new_storage->shelf->cell->item->item_name, current_shelf_index, new_storage->shelf->cell);
@@ -240,8 +254,7 @@ Result add_item(Storage *storage, char *item_name, int quantity, int shelf_index
     for (int i = 0; i < sizeof(storage->shelf[shelf_index].cell); i++)
     {
         // Check if the cell contains an item with the same name
-        if (storage->shelf[shelf_index].cell[i].item != NULL &&
-            strcmp(storage->shelf[shelf_index].cell[i].item->item_name, item_name) == 0)
+        if (storage->shelf[shelf_index].cell[i].item != NULL && strcmp(storage->shelf[shelf_index].cell[i].item->item_name, item_name) == 0)
         {
             item_already_exists = 1;
             break; // An item with the same name already exists, no need to continue searching
