@@ -30,7 +30,7 @@ typedef struct storage{
 Storage *create_storage(int num_of_shelvs);
 Storage *add_item(Storage *storage,char *item_name, int qunatity, int shelf_index, int cell_index);
 Storage *create_cells(Storage *storage, int num_of_cells, int shelf_index);
-//char* print_item(Storage *storage,int item_id);
+char* print_item(Storage *storage,int item_id);
 int main()
 {
     Storage *new_storage = NULL;
@@ -91,7 +91,7 @@ int main()
                 num_of_shelvs = atoi(second_word);              //assigning the number of shelves acording to the second word that was provided from txt file
                 
             }
-            printf("tessssst\n");
+            // printf("tessssst\n");
             if (strcmp(first_word, "_msps") == 0)
             {
                 if(new_storage != NULL)
@@ -105,31 +105,32 @@ int main()
                 }
                 
             }
-            printf("test number 2\n");
+            // printf("test number 2\n");
             if(strcmp(first_word, "_add") == 0)
             {
-                printf("test add function\n");
-                printf("Adding item...\n");
+                // printf("test add function\n");
+                // printf("Adding item...\n");
                 new_storage = add_item(new_storage, second_word, atoi(item_quantity), atoi(shelf_index), atoi(cell_index));
-                if (add_item != NULL)
-                {
-                    printf("Item added:\n");
-                    printf("Item name: %s\n",new_storage->shelf->cell->item->item_name);
-                    printf("Item quantity: %d\n", new_storage->shelf->cell->item->quantity);
-                    printf("Item on shelf num: %d\n", atoi(shelf_index));
-                    printf("Item on cell num: %d\n", atoi(cell_index));
-                }
-                else
-                {
-                    printf("Failed to add item\n");
-                }
+                // if (add_item != NULL)
+                // {
+                //     printf("Item added:\n");
+                //     printf("Item name: %s\n",new_storage->shelf->cell->item->item_name);
+                //     printf("Item quantity: %d\n", new_storage->shelf->cell->item->quantity);
+                //     printf("Item on shelf num: %d\n", atoi(shelf_index));
+                //     printf("Item on cell num: %d\n", atoi(cell_index));
+                // }
+                // else
+                // {
+                //     printf("Failed to add item\n");
+                // }
             }
-            if (strcmp(first_word, "pi") == 0)
+            if (strcmp(first_word, "_pi") == 0)
             {
-               if(new_storage != NULL)
-               {
-                   int item_id = atoi(second_word);
-               }
+                int item_id = atoi(second_word);
+                if(new_storage != NULL)
+                {
+                    print_item(new_storage, item_id);
+                }
             }
             
             line = strtok(NULL, delimiter);
@@ -230,12 +231,21 @@ Storage *add_item(Storage *storage, char *item_name, int quantity, int shelf_ind
 }
 
 
-// char *print_item(Storage *storage, int item_id)
-// {
-//     Storage *head = storage->shelf->item.item_id;
-//     while(head->shelf->item.next != NULL && head->shelf->item.item_id != item_id)
-//     {
-//         head = head->shelf->item.next;
-//     }
-    
-// }
+char *print_item(Storage *storage, int item_id)
+{
+    Storage *find_item = storage;
+    for (int i = 0; i < storage->start_num_of_shelvs; i++)
+    {
+        for (int j = 0; j < storage->shelf->num_of_cells; j++)
+        {
+            if (storage->shelf->cell->item->item_id == item_id)
+            {
+                printf("item name: %s\n", storage->shelf->cell->item->item_name);
+                printf("item id: %d\n", storage->shelf->cell->item->item_id);
+                printf("item position: [%d,%d]\n",storage->shelf[i],storage->shelf->cell[j]);
+                return storage->shelf->cell->item->item_name;
+            }
+        }
+    }
+    return NULL;   
+}
