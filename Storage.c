@@ -223,7 +223,22 @@ Storage *add_item(Storage *storage, char *item_name, int quantity, int shelf_ind
     new_item->item_id = cell_index;         //assigning the item id to the cell
     new_item->item_name = strdup(item_name);                                      
     new_item->quantity = quantity;
-
+    if(new_item->quantity > storage->shelf->num_of_cells)
+    {
+        Shelf *new_shelf = (Shelf *)malloc(sizeof(Shelf));
+        if(new_shelf == NULL)
+        {
+            printf("Failed allocating memory for the shelf\n");
+            return storage;
+        }
+    
+        storage->shelf->next = new_shelf;
+        new_shelf->num_of_cells = quantity;
+        new_shelf = new_shelf->next;
+        storage->shelf->cell->item = new_item;
+        new_item = new_item->next;
+        return storage;
+    }
     // Link the new item to the cell
     storage->shelf->cell->item = new_item;
     new_item = new_item->next;
