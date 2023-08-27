@@ -2,7 +2,7 @@
 #include<stdlib.h>
 #include<string.h>
 
-typedef enum {success,fail}Result;
+
 
 typedef struct item{
     int item_id;
@@ -17,7 +17,7 @@ typedef struct cell{
 } Cell;
 
 typedef struct shelf{
-    int *num_of_cells;
+    int num_of_cells;
     struct shelf *next;
     Cell *cell;
 } Shelf;
@@ -27,40 +27,20 @@ typedef struct storage{
     Shelf *shelf;
 } Storage;
 
-Result create_storage(int num_of_shelvs);
-Result add_item(Storage *storage,char *item_name, int qunatity, int shelf_index, int cell_index);
-Result create_cells(Storage *storage, int num_of_cells, int shelf_index);
-char* print_item(Storage *storage,int item_id);
+Storage *create_storage(int num_of_shelvs);
+Storage *add_item(Storage *storage,char *item_name, int qunatity, int shelf_index, int cell_index);
+Storage *create_cells(Storage *storage, int num_of_cells, int shelf_index);
+//char* print_item(Storage *storage,int item_id);
 int main()
 {
     Storage *new_storage = NULL;
     int current_shelf_index = 0;
-    int error_print = 0;
-    switch (error_print)
-    {
-        case 1:
-            printf("Error- action does not exist!\n");
-            break;
-        case 2:
-            printf("SWAP- one/two of the locations are not legal!\n");
-            break;
-        case 3:
-            printf("MOVE- one/two of the locations are not legal!\n");
-            break;
-        case 4:
-            printf("PRINT ITEM- the item number is not legal!\n");
-            break;
-        case 5:
-            printf("REMOVE- the items location is not legal!\n");
-            break;
-    }
-
     //char *first_word, second_word;
     int num_of_shelvs = 0;
     int num_of_cells = 0;
-    //int item_quantity = 0;
-    //int shelf_index = 0;
-    //int cell_index = 0;
+    // int item_quantity = 0;
+    // int shelf_index = 0;
+    // int cell_index = 0;
     const char delimiter []= " ";
 
 
@@ -68,7 +48,6 @@ int main()
     file = fopen("Storage.txt","r");
     if(file == NULL)
     {
-        printf("Error");
         return 1;
     }
     printf("file is open\n");
@@ -108,10 +87,8 @@ int main()
 
             if (strcmp(first_word, "_isc") == 0)
             {
-                if(create_storage(atoi(second_word)) == success)    //checking if the storage was created successfully if not exit progam
-                {
-                    num_of_shelvs = atoi(second_word);              //assigning the number of shelves acording to the second word that was provided from txt file
-                }
+                new_storage = create_storage(atoi(second_word));              // checking if the storage was created successfully if not exit progam
+                num_of_shelvs = atoi(second_word);              //assigning the number of shelves acording to the second word that was provided from txt file
                 
             }
             printf("tessssst\n");
@@ -122,10 +99,8 @@ int main()
                     num_of_cells = atoi(second_word);
                     for (int i = 0; i < num_of_cells; i++)              //a for loop for iterating through the number of shelfs to create the cells for each one of them
                     {
-                        if(create_cells(new_storage, num_of_cells, current_shelf_index) == success)
-                        {
-                            current_shelf_index++;
-                        }
+                        new_storage = create_cells(new_storage, num_of_cells, num_of_shelvs);
+                        current_shelf_index++;
                     }
                 }
                 
@@ -135,11 +110,11 @@ int main()
             {
                 printf("test add function\n");
                 printf("Adding item...\n");
-                Result add_result = add_item(new_storage, second_word, atoi(item_quantity), atoi(shelf_index), atoi(cell_index));
-                if (add_result == success)
+                new_storage = add_item(new_storage, second_word, atoi(item_quantity), atoi(shelf_index), atoi(cell_index));
+                if (add_item != NULL)
                 {
                     printf("Item added:\n");
-                    printf("Item name: %s\n", new_storage->shelf[atoi(shelf_index)].cell[atoi(cell_index)].item->item_name);
+                    printf("Item name: %s\n", new_storage->shelf->cell->item->item_name);
                     printf("Item quantity: %d\n", new_storage->shelf[atoi(shelf_index)].cell[atoi(cell_index)].item->quantity);
                     printf("Item on shelf num: %d\n", atoi(shelf_index));
                     printf("Item on cell num: %d\n", atoi(cell_index));
@@ -148,9 +123,9 @@ int main()
                 {
                     printf("Failed to add item\n");
                 }
-                if(add_item(new_storage, second_word, atoi(item_quantity), atoi(shelf_index), atoi(cell_index)) == success)
+                if(add_item(new_storage, second_word, atoi(item_quantity), atoi(shelf_index), atoi(cell_index)) != NULL)
                 {
-                    printf("itme added : \nitem name is %s\nitem quantity is %s\nitem on shelf num : %d\n item on cell num : %d\n", new_storage->shelf->cell->item, new_storage->shelf->cell->item->item_name, current_shelf_index, new_storage->shelf->cell);
+                    printf("itme added : \nitem name is %s\nitem quantity is %d\nitem on shelf num : %d\n item on cell num : %d\n", new_storage->shelf->cell->item, new_storage->shelf->cell->item->item_name, current_shelf_index, new_storage->shelf->cell);
                     printf("test add function\n");
                 }else{
                     printf("total fail\n");
@@ -160,7 +135,7 @@ int main()
             // {
             //    if(new_storage != NULL)
             //    {
-            //        item_id = atoi(second_word);
+            //        int item_id = atoi(second_word);
             //    }
             // }
             
@@ -172,18 +147,18 @@ int main()
     return 0;
 }
 
-Result create_storage(int num_of_shelvs)
+Storage *create_storage(int num_of_shelvs)
 {
     if(num_of_shelvs <= 0)
     {
         //error_print(1);
-        return fail;
+        return NULL;
     }
     Storage *new_storage;
     new_storage = (Storage *)malloc(sizeof(Storage));      //creating the storage
     if(new_storage == NULL){
         printf("failed allocating memory for the Storage\n");
-        return fail;
+        return NULL;
     }
     new_storage->start_num_of_shelvs = num_of_shelvs;
 
@@ -195,28 +170,28 @@ Result create_storage(int num_of_shelvs)
         {
             printf("failed allocating memory for the shelf\n");
             free(new_storage); // freeing the memory of created storage in case of error allocating memory for shelf
-            return fail;
+            return NULL;
         }
         new_storage->shelf = current_shelf; // assigning the created shelf to the storage
         current_shelf = current_shelf->next;    // moving to the next shelf
     }
     
-    return success;
+    return new_storage;
 }
 
-Result create_cells(Storage *storage, int num_of_cells, int shelf_index)
+Storage *create_cells(Storage *storage, int num_of_cells, int shelf_index)
 {
     
     if(shelf_index > storage->start_num_of_shelvs)      //checking if the shelf index im resiving from the txt file is correct not equal or bigger thenthe start num of shelvs i was creating in the create_storage funciton
     {
         printf("Shelf index is out of bounds\n");
-        return fail;
+        return NULL;
     }
 
     Cell *current_cell;                         //pointing to the current cell
     for (int i = 0; i < num_of_cells; i++)      //for loop to create the numebr of cells acording to data from txt file
     {
-        current_cell = (Cell *)malloc(sizeof(Cell) * num_of_cells);
+        current_cell = (Cell *)malloc(sizeof(Cell));
         if (current_cell == NULL)
         {
             printf("Failed allocating memory for the cells\n");
@@ -224,102 +199,66 @@ Result create_cells(Storage *storage, int num_of_cells, int shelf_index)
             {
                 free(current_cell->next);           //if failed free the memory of the cell that was created previously
             }
-            return fail;
+            return NULL;
         }
         storage->shelf->cell = current_cell;        //assigning the cell to the shelf
         current_cell = current_cell->next;         //moving to the next cell    
     }
 
-    return success;
+    return storage;
 }
 
-Result add_item(Storage *storage, char *item_name, int quantity, int shelf_index, int cell_index)
+Storage *add_item(Storage *storage, char *item_name, int quantity, int shelf_index, int cell_index)
 {
-    // Check if the shelf index is valid
-    if (shelf_index < 0 || shelf_index >= storage->start_num_of_shelvs)
+    if (storage == NULL || shelf_index >= storage->start_num_of_shelvs || cell_index >= storage->shelf[shelf_index].num_of_cells)
     {
-        printf("Shelf index is out of bounds\n");
-        return fail;
+        printf("Invalid shelf or cell index\n");
+        return storage;
     }
 
-    // Check if the cell index is valid
-    if (cell_index < 0 || cell_index >= sizeof(storage->shelf[shelf_index].num_of_cells))
-    {
-        printf("Cell index is out of bounds\n");
-        return fail;
-    }
-
-    // Iterate through cells in the specified shelf
-    int item_already_exists = 0; // Flag to track if an item with the same name already exists
-    for (int i = 0; i < sizeof(storage->shelf[shelf_index].cell); i++)
-    {
-        // Check if the cell contains an item with the same name
-        if (storage->shelf[shelf_index].cell[i].item != NULL && strcmp(storage->shelf[shelf_index].cell[i].item->item_name, item_name) == 0)
-        {
-            item_already_exists = 1;
-            break; // An item with the same name already exists, no need to continue searching
-        }
-    }
-
-    // Allocate memory for the new item
     Item *new_item = (Item *)malloc(sizeof(Item));
     if (new_item == NULL)
     {
         printf("Failed allocating memory for the item\n");
-        return fail;
+        return storage;
     }
 
-    // Initialize the item
-    new_item->item_name = (char *)malloc(strlen(item_name) + 1);
-    if (new_item->item_name == NULL)
-    {
-        printf("Failed allocating memory for the item name\n");
-        free(new_item);
-        return fail;
-    }
-    strcpy(new_item->item_name, item_name);
-
-    // Set the item_id based on whether the item already exists or not
-    if (item_already_exists)
-    {
-        // An item with the same name already exists in the shelf, so assign the same item_id
-        new_item->item_id = storage->shelf[shelf_index].cell[cell_index].item->item_id;
-    }
-    else
-    {
-        // No item with the same name exists, increment the item_id
-        new_item->item_id = storage->shelf[shelf_index].cell[cell_index].item->item_id + 1;
-    }
-
+    // Initialize the item's fields
+    new_item->item_id = storage->shelf[shelf_index].cell[cell_index].item->item_id; // Use num_of_items to generate a unique item_id
+    new_item->item_name = strdup(item_name);                                       // Duplicate the item_name using strdup
     new_item->quantity = quantity;
 
-    // Add the new item to the specified cell in the specified shelf
+    // Link the new item to the cell
+    new_item->next = storage->shelf[shelf_index].cell[cell_index].item;
     storage->shelf[shelf_index].cell[cell_index].item = new_item;
 
-    return success;
+    // Increment the num_of_items in the cell
+    storage->shelf[shelf_index].cell[cell_index].item->item_id++;
+
+    return storage;
 }
 
-// Result add_item(Storage *storage,char *item_name,int qunatity,int shelf_index,int cell_index)
+// Storage *add_item(Storage *storage,char *item_name,int qunatity,int shelf_index,int cell_index)
 // {
     
 //     if(cell_index > sizeof(storage->shelf->num_of_cells))       //checking if the cell index is out of bounds
 //     {
 //         printf("Cell index is out of bounds\n");
-//         return fail;
+//         return NULL;
 //     }
 //     if(shelf_index > storage->start_num_of_shelvs)  //cheking if the shelf index is out of bounds
 //     {
 //         printf("Shelf index is out of bounds\n");
-//         return fail;
+//         return NULL;
 //     }
 
 //     Item *new_item = (Item *)malloc(sizeof(Item));      //creating the item struct
 //     if(new_item == NULL)
 //     {
 //         printf("Failed allocating memory for the item\n");
-//         return fail;
+//         return NULL;
 //     }
-//     Cell *find_item;
+    
 //     for(int i =0; i < sizeof(storage->shelf->num_of_cells); i++)
 //     {
 //         if(strcmp(storage->shelf->cell[i].item->item_name, item_name) != 0)     //iring the item name from the txt file to the item name in the cell
@@ -337,12 +276,12 @@ Result add_item(Storage *storage, char *item_name, int quantity, int shelf_index
 //         {
 //             printf("Failed allocating memory for the item name\n");
 //             free(new_item);
-//             return fail;
+//             return NULL;
 //         }
 //         strcpy(new_item->item_name, item_name);     //copying the item name from the txt file to the newly created item
 //         new_item->quantity = qunatity;              //copying the quantity from the txt file to the newly created item
 //     }
-//     return success;
+//     return storage;
 // }
 
 // char *print_item(Storage *storage, int item_id)
