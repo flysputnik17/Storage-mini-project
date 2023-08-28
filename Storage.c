@@ -110,29 +110,41 @@ int main()
                 // printf("test add function\n");
                 // printf("Adding item...\n");
                 new_storage = add_item(new_storage, second_word, atoi(item_quantity), atoi(shelf_index), atoi(cell_index));
-                if (add_item != NULL)
-                {
-                    printf("Item added:\n");
-                    printf("Item name: %s\n",new_storage->shelf->cell->item->item_name);
-                    printf("Item quantity: %d\n", new_storage->shelf->cell->item->quantity);
-                    printf("Item on shelf num: %d\n",new_storage->shelf->current_shelf_index);
-                    printf("Item on cell num: %d\n",new_storage->shelf->cell->current_cell_index);
-                }
-                else
-                {
-                    printf("Failed to add item\n");
-                }
+                // if (add_item != NULL)
+                // {
+                //     printf("Item added:\n");
+                //     printf("Item name: %s\n",new_storage->shelf->cell->item->item_name);
+                //     printf("Item quantity: %d\n", new_storage->shelf->cell->item->quantity);
+                //     printf("Item on shelf num: %d\n",new_storage->shelf->current_shelf_index);
+                //     printf("Item on cell num: %d\n",new_storage->shelf->cell->current_cell_index);
+                // }
+                // else
+                // {
+                //     printf("Failed to add item\n");
+                // }
             }
             if (strcmp(first_word, "_pi") == 0)
             {
-                
+                char *item_name;
                 int item_id = atoi(second_word);
-                if(new_storage == NULL)
+                if (new_storage != NULL)
                 {
-                    print_item(new_storage, item_id);
+                    item_name = print_item(new_storage, item_id);
+                    if (item_name != NULL)
+                    {
+                        printf("Item found: %s\n", item_name);
+                    }
+                    else
+                    {
+                        printf("Item not found with ID %d\n", item_id);
+                    }
+                }
+                else
+                {
+                    printf("Storage is not initialized\n");
                 }
             }
-            
+
             line = strtok(NULL, delimiter);
         }
     }
@@ -247,21 +259,32 @@ Storage *add_item(Storage *storage, char *item_name, int quantity, int shelf_ind
     return storage;
 }
 
-
 char *print_item(Storage *storage, int item_id)
 {
     for (int i = 0; i < storage->start_num_of_shelvs; i++)
     {
-        for (int j = 0; j < storage->shelf->num_of_cells; j++)
+        Shelf *current_shelf = &(storage->shelf[i]); // Get the current shelf
+
+        for (int j = 0; j < current_shelf->num_of_cells; j++)
         {
-            if (storage->shelf->cell->item->item_id == item_id)
+            Cell *current_cell = &(current_shelf->cell[j]); // Get the current cell
+
+            Item *item = current_cell->item;
+
+            while (item != NULL)
             {
-                printf("item name: %s\n", storage->shelf->cell->item->item_name);
-                printf("item id: %d\n", storage->shelf->cell->item->item_id);
-                printf("item position: [%d,%d]\n",storage->shelf->num_of_cells,storage->shelf->cell->item->item_id);
-                return storage->shelf->cell->item->item_name;
+                if (item->item_id == item_id)
+                {
+                   printf("Item name: %s\n", item->item_name);
+                   printf("Item id: %d\n", item->item_id);
+                   printf("Item position: [%d,%d]\n", i, j);
+                   return item->item_name;
+                }
+                item = item->next; // Move to the next item in the cell
             }
         }
     }
-    return NULL;   
+
+    printf("Item with id %d not found\n", item_id);
+    return NULL;
 }
