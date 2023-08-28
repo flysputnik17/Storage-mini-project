@@ -22,11 +22,11 @@ _add eggs 3 2 0
 #_ps
 _rm 2 0 0
 _rm 3 2 3
-_pi 21
+#_pi 21
 _mv 1 1 2 3 3 
-_pi 7
+#_pi 7
 _mv 2 2 4 4 0 
-_pi 10
+#_pi 10
 _sw 4 5 5 4
 _sw 4 0 3 4
 _ps

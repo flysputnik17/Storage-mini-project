@@ -2,8 +2,6 @@
 #include<stdlib.h>
 #include<string.h>
 
-
-
 typedef struct item{
     int item_id;
     char *item_name;
@@ -32,7 +30,11 @@ typedef struct storage{
 Storage *create_storage(int num_of_shelvs);
 Storage *add_item(Storage *storage,char *item_name, int qunatity, int shelf_index, int cell_index);
 Storage *create_cells(Storage *storage, int num_of_cells, int shelf_index);
-char* print_item(Storage *storage,int item_id);
+Storage *remove_item(Storage *storage, int shelf_index, int start_cell_index, int end_cell_index);
+Storage *move_items(Storage *storage, int shelf_index, int start_cell_index, int end_cell_index,int new_shelf_index,int new_cell_index);
+Storage *swap_items(Storage *storage, int shelf_index_a, int cell_index_a, int shelf_index_b, int cell_index_b);
+    // char *item_print(Storage *storage,int item_id);
+
 int main()
 {
     Storage *new_storage = NULL;
@@ -77,6 +79,7 @@ int main()
             char *item_quantity = strtok(NULL, delimiter);
             char *shelf_index = strtok(NULL, delimiter);
             char *cell_index = strtok(NULL, delimiter);
+            
             //printf("quntity is %s, shelf-index is %s, cell-indes is %s\n", item_quantity, shelf_index, cell_index);
 
             if (second_word == NULL)
@@ -123,26 +126,31 @@ int main()
                 //     printf("Failed to add item\n");
                 // }
             }
-            if (strcmp(first_word, "_pi") == 0)
+
+            if(strcmp(first_word,"_rm") == 0)
             {
-                char *item_name;
-                int item_id = atoi(second_word);
-                if (new_storage != NULL)
-                {
-                    item_name = print_item(new_storage, item_id);
-                    if (item_name != NULL)
-                    {
-                        printf("Item found: %s\n", item_name);
-                    }
-                    else
-                    {
-                        printf("Item not found with ID %d\n", item_id);
-                    }
-                }
-                else
-                {
-                    printf("Storage is not initialized\n");
-                }
+                new_storage = remove_item(new_storage, atoi(item_quantity), atoi(shelf_index), atoi(cell_index));
+                printf("Item removed\n");
+            }
+
+            if(strcmp(first_word,"_mv") == 0)
+            {
+                new_storage = move_items(new_storage, atoi(second_word), atoi(item_quantity), atoi(item_quantity), atoi(shelf_index), atoi(cell_index));
+                printf("Item moved\n");
+            }
+            if(strcmp(first_word,"_sw") == 0)
+            {
+                new_storage = swap_items(new_storage, atoi(shelf_index), atoi(item_quantity), atoi(shelf_index), atoi(item_quantity));
+                printf("Item swapped\n");
+            }
+
+            if (strcmp(first_word,"_pi") == 0)
+            {
+                continue;
+                // if (new_storage != NULL)
+                // {
+                //     item_print(new_storage, atoi(second_word));
+                // }
             }
 
             line = strtok(NULL, delimiter);
@@ -150,6 +158,7 @@ int main()
     }
 
     fclose(file);
+
     return 0;
 }
 
@@ -259,7 +268,7 @@ Storage *add_item(Storage *storage, char *item_name, int quantity, int shelf_ind
     return storage;
 }
 
-char *print_item(Storage *storage, int item_id)
+char *item_print(Storage *storage, int item_id)
 {
     for (int i = 0; i < storage->start_num_of_shelvs; i++)
     {
@@ -275,10 +284,8 @@ char *print_item(Storage *storage, int item_id)
             {
                 if (item->item_id == item_id)
                 {
-                   printf("Item name: %s\n", item->item_name);
-                   printf("Item id: %d\n", item->item_id);
-                   printf("Item position: [%d,%d]\n", i, j);
-                   return item->item_name;
+                    printf("item: %s, Number: %d, Position [%d,%d]\n", item->item_name, item->quantity, i, j);
+                    return item->item_name;
                 }
                 item = item->next; // Move to the next item in the cell
             }
@@ -287,4 +294,76 @@ char *print_item(Storage *storage, int item_id)
 
     printf("Item with id %d not found\n", item_id);
     return NULL;
+}
+
+Storage *remove_item(Storage *storage, int shelf_index, int start_cell_index, int end_cell_index)
+{
+    Shelf *target_shelf = &(storage->shelf[shelf_index]); // Get the target shelf
+
+    for (int i = start_cell_index; i <= end_cell_index; i++)
+    {
+        Cell *target_cell = &(target_shelf->cell[i]); // Get the target cell
+
+        Item *current_item = target_cell->item;
+        while (current_item != NULL)
+        {
+            Item *next_item = current_item->next; // Store the next item temporarily
+            free(current_item->item_name);        // Free the item name memory
+            free(current_item);                   // Free the item structure itself
+            target_cell->item = next_item;        // Update the cell to the next item
+            current_item = next_item;             // Move to the next item in the cell
+        }
+    }
+
+    return storage;
+}
+
+Storage *move_items(Storage *storage, int shelf_index, int start_cell_index, int end_cell_index, int new_shelf_index, int new_cell_index)
+{
+    Shelf *source_shelf = &(storage->shelf[shelf_index]);          // Get the source shelf
+    Shelf *destination_shelf = &(storage->shelf[new_shelf_index]); // Get the destination shelf
+
+    if (source_shelf == destination_shelf && shelf_index == new_shelf_index)
+    {
+        printf("Source and destination shelves are the same.\n");
+        return storage;
+    }
+
+    for (int i = start_cell_index; i <= end_cell_index; i++)
+    {
+        Cell *source_cell = &(source_shelf->cell[i]);                        // Get the source cell
+        Cell *destination_cell = &(destination_shelf->cell[new_cell_index]); // Get the destination cell
+
+        Item *current_item = source_cell->item;
+        while (current_item != NULL)
+        {
+            Item *next_item = current_item->next; // Store the next item temporarily
+
+            // Move the item to the destination cell
+            current_item->item_id = new_cell_index;
+            current_item->next = destination_cell->item;
+            destination_cell->item = current_item;
+
+            source_cell->item = next_item; // Update the source cell to the next item
+            current_item = next_item;      // Move to the next item in the source cell
+        }
+    }
+
+    return storage;
+}
+
+Storage *swap_items(Storage *storage, int shelf_index_a, int cell_index_a, int shelf_index_b, int cell_index_b)
+{
+    Shelf *shelf_a = &(storage->shelf[shelf_index_a]); // Get shelf A
+    Shelf *shelf_b = &(storage->shelf[shelf_index_b]); // Get shelf B
+
+    Cell *cell_a = &(shelf_a->cell[cell_index_a]); // Get cell A
+    Cell *cell_b = &(shelf_b->cell[cell_index_b]); // Get cell B
+
+    // Swap items between cell A and cell B
+    Item *temp = cell_a->item;
+    cell_a->item = cell_b->item;
+    cell_b->item = temp;
+
+    return storage;
 }
