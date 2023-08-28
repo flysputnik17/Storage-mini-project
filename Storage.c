@@ -12,12 +12,14 @@ typedef struct item{
 } Item;
 
 typedef struct cell{
+    int current_cell_index;
     Item *item;
     struct cell *next;
 } Cell;
 
 typedef struct shelf{
     int num_of_cells;
+    int current_shelf_index;
     struct shelf *next;
     Cell *cell;
 } Shelf;
@@ -34,8 +36,6 @@ char* print_item(Storage *storage,int item_id);
 int main()
 {
     Storage *new_storage = NULL;
-    int current_shelf_index = 0;
-    //char *first_word, second_word;
     int num_of_shelvs = 0;
     int num_of_cells = 0;
     // int item_quantity = 0;
@@ -100,7 +100,6 @@ int main()
                     for (int i = 0; i < num_of_cells; i++)              //a for loop for iterating through the number of shelfs to create the cells for each one of them
                     {
                         new_storage = create_cells(new_storage, num_of_cells, num_of_shelvs);
-                        current_shelf_index++;
                     }
                 }
                 
@@ -111,23 +110,24 @@ int main()
                 // printf("test add function\n");
                 // printf("Adding item...\n");
                 new_storage = add_item(new_storage, second_word, atoi(item_quantity), atoi(shelf_index), atoi(cell_index));
-                // if (add_item != NULL)
-                // {
-                //     printf("Item added:\n");
-                //     printf("Item name: %s\n",new_storage->shelf->cell->item->item_name);
-                //     printf("Item quantity: %d\n", new_storage->shelf->cell->item->quantity);
-                //     printf("Item on shelf num: %d\n", atoi(shelf_index));
-                //     printf("Item on cell num: %d\n", atoi(cell_index));
-                // }
-                // else
-                // {
-                //     printf("Failed to add item\n");
-                // }
+                if (add_item != NULL)
+                {
+                    printf("Item added:\n");
+                    printf("Item name: %s\n",new_storage->shelf->cell->item->item_name);
+                    printf("Item quantity: %d\n", new_storage->shelf->cell->item->quantity);
+                    printf("Item on shelf num: %d\n",new_storage->shelf->current_shelf_index);
+                    printf("Item on cell num: %d\n",new_storage->shelf->cell->current_cell_index);
+                }
+                else
+                {
+                    printf("Failed to add item\n");
+                }
             }
             if (strcmp(first_word, "_pi") == 0)
             {
+                
                 int item_id = atoi(second_word);
-                if(new_storage != NULL)
+                if(new_storage == NULL)
                 {
                     print_item(new_storage, item_id);
                 }
@@ -167,9 +167,10 @@ Storage *create_storage(int num_of_shelvs)
             return NULL;
         }
         new_storage->shelf = current_shelf;                                              // assigning the created shelf to the storage
-        current_shelf = current_shelf->next;                                             // moving to the next shelf
+        current_shelf = current_shelf->next;                                                                // moving to the next shelf
     }
-    
+    new_storage->shelf->current_shelf_index = 0;
+
     return new_storage;
 }
 
@@ -198,8 +199,8 @@ Storage *create_cells(Storage *storage, int num_of_cells, int shelf_index)
         }
         storage->shelf->cell = current_cell;        //assigning the cell to the shelf
         current_cell = current_cell->next;
-        
     }
+    storage->shelf->cell->current_cell_index = 0;
 
     return storage;
 }
@@ -223,7 +224,7 @@ Storage *add_item(Storage *storage, char *item_name, int quantity, int shelf_ind
     new_item->item_id = cell_index;         //assigning the item id to the cell
     new_item->item_name = strdup(item_name);                                      
     new_item->quantity = quantity;
-    if(new_item->quantity > storage->shelf->num_of_cells)
+    if(new_item->quantity > (storage->shelf->num_of_cells - storage->shelf->cell->current_cell_index))
     {
         Shelf *new_shelf = (Shelf *)malloc(sizeof(Shelf));
         if(new_shelf == NULL)
@@ -241,6 +242,7 @@ Storage *add_item(Storage *storage, char *item_name, int quantity, int shelf_ind
     }
     // Link the new item to the cell
     storage->shelf->cell->item = new_item;
+    storage->shelf->cell->current_cell_index = new_item->item_id;   //giving the current cell index to be the item id
     new_item = new_item->next;
     return storage;
 }
@@ -248,7 +250,6 @@ Storage *add_item(Storage *storage, char *item_name, int quantity, int shelf_ind
 
 char *print_item(Storage *storage, int item_id)
 {
-    Storage *find_item = storage;
     for (int i = 0; i < storage->start_num_of_shelvs; i++)
     {
         for (int j = 0; j < storage->shelf->num_of_cells; j++)
@@ -257,7 +258,7 @@ char *print_item(Storage *storage, int item_id)
             {
                 printf("item name: %s\n", storage->shelf->cell->item->item_name);
                 printf("item id: %d\n", storage->shelf->cell->item->item_id);
-                printf("item position: [%d,%d]\n",storage->shelf[i],storage->shelf->cell[j]);
+                printf("item position: [%d,%d]\n",storage->shelf->num_of_cells,storage->shelf->cell->item->item_id);
                 return storage->shelf->cell->item->item_name;
             }
         }
